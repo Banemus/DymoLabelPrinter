@@ -25,6 +25,12 @@ public class PROGRAM
     {
         DymoLabel
            label;
+        string
+            label_directory;
+         
+        label_directory = System.Reflection.Assembly.GetEntryAssembly().Location;
+
+        label_directory = label_directory.Substring( 0, label_directory.LastIndexOf( "\\" ) ).Replace( "\\", "/" ) + "/Labels/";
 
         label = new DymoLabel();
 
@@ -33,25 +39,34 @@ public class PROGRAM
             switch ( type_table[ 0 ].ToLower() )
             {
                 case "price":  
-                { 
-                    label.LoadLabelFromXML( System.IO.File.ReadAllText( "Labels/PriceLabel.xml" ).Replace( "{PRICE}", data_table[ 0 ] ) );
-                    DymoPrinter.Instance.PrintLabel( label, "DYMO LabelManager PnP" );
+                {
+                    Console.WriteLine( "Contructing Label with price: " + data_table[ 0 ] );
+                    label.LoadLabelFromXML( System.IO.File.ReadAllText( label_directory + "PriceLabel.xml" ).Replace( "{PRICE}", data_table[ 0 ] ) );
                 }
                 break;
 
                 case "barcode":
-                {  
-                    label.LoadLabelFromXML( System.IO.File.ReadAllText( "Labels/BarcodeLabel.xml" ).Replace( "{BARCODE}", data_table[ 0 ] ) );
-                    DymoPrinter.Instance.PrintLabel( label, "DYMO LabelManager PnP" );
+                {
+                    Console.WriteLine( "Contructing Label with barcode data: " + data_table[ 0 ] );
+                    label.LoadLabelFromXML( System.IO.File.ReadAllText( label_directory + "BarcodeLabel.xml" ).Replace( "{BARCODE}", data_table[ 0 ] ) );
                 }
                 break;
+
+                default:
+                {
+                    Console.WriteLine( "Error type given: '" + type_table[ 0 ].ToLower() + "', quitting the printing." );
+                    System.Threading.Thread.Sleep( 5000 );
+                    return;
+                }
             }
+
+            Console.WriteLine( "Printing" );
+            DymoPrinter.Instance.PrintLabel( label, "DYMO LabelManager PnP" );
         }
         else
         {
             Console.WriteLine( "Requires Type argument with a value of: " + String.Join( ", ", Enum.GetValues( typeof( TYPE ) ).Cast<TYPE[]>().Select( type => type.ToString() ) ) );
         }
-
     }
 
     // .. VARIABLES
